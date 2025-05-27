@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { UserIcon } from "lucide-react";
-import { auth } from "@/auth";
-import { signOutUser } from "@/lib/actions/user.action";
+import {Button} from "@/components/ui/button";
+import {UserIcon} from "lucide-react";
+import {auth} from "@/auth";
+import {signOutUser} from "@/lib/actions/user.action";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -18,7 +18,7 @@ const UserButton = async () => {
         return (
             <Button asChild>
                 <Link href="/sign-in">
-                    <UserIcon /> Sign In
+                    <UserIcon/> Sign In
                 </Link>
             </Button>
         )
@@ -31,7 +31,8 @@ const UserButton = async () => {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <div className="flex item-center">
-                        <Button variant="ghost" className="relative w-8 h-8 rounded-full ml-2 flex items-center justify-center bg-gray-200">
+                        <Button variant="ghost"
+                                className="relative w-8 h-8 rounded-full ml-2 flex items-center justify-center bg-gray-200">
                             {firsInitial}
                         </Button>
                     </div>
@@ -57,6 +58,15 @@ const UserButton = async () => {
                             Order History
                         </Link>
                     </DropdownMenuItem>
+                    {
+                        session?.user?.role === 'admin' && (
+                            <DropdownMenuItem>
+                                <Link href="/admin/overview" className="w-full">
+                                    Admin
+                                </Link>
+                            </DropdownMenuItem>
+                        )
+                    }
                     <DropdownMenuItem className="p-0 mb-1">
                         <form action={signOutUser} className="w-full">
                             <Button className="w-full py-4 px-2 h-4 justify-start" variant="ghost">Sign out</Button>
