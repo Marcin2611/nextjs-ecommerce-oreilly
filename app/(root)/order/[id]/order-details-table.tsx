@@ -7,8 +7,12 @@ import {Badge} from "@/components/ui/badge";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import Link from "next/link";
 import Image from "next/image";
+import {useTransition} from "react";
+import {Button} from "@/components/ui/button";
+import {deliverOrder, updateOrderToPaid, updateOrderToPaidCOD} from "@/lib/actions/order.actions";
+import {toast} from "sonner";
 
-const OrderDetailsTable = ({order}: { order: Order }) => {
+const OrderDetailsTable = ({order, isAdmin}: { order: Order; isAdmin: boolean }) => {
     const {
         shippingAddress,
         orderitems,
@@ -23,6 +27,50 @@ const OrderDetailsTable = ({order}: { order: Order }) => {
         deliveredAt,
         id
     } = order;
+
+    const MarkAsPaidButton = () => {
+        const [isPending, startTransition] = useTransition();
+
+        return <Button
+            type="button"
+            disabled={isPending}
+            onClick={() => {
+                startTransition(async () => {
+                    const res = await updateOrderToPaidCOD(id);
+
+                    if (res.success) {
+                        toast.success(res.message)
+                    } else {
+                        toast.error(res.message)
+                    }
+                });
+            }}
+        >
+            {isPending ? 'Processing...' : 'Mark as Paid'}
+        </Button>
+    }
+
+    const MarkAsDeliveredButton = () => {
+        const [isPending, startTransition] = useTransition();
+
+        return <Button
+            type="button"
+            disabled={isPending}
+            onClick={() => {
+                startTransition(async () => {
+                    const res = await deliverOrder(id);
+
+                    if (res.success) {
+                        toast.success(res.message)
+                    } else {
+                        toast.error(res.message)
+                    }
+                });
+            }}
+        >
+            {isPending ? 'Processing...' : 'Mark as Delivered'}
+        </Button>
+    }
 
     return (
         <>
@@ -94,20 +142,29 @@ const OrderDetailsTable = ({order}: { order: Order }) => {
                         <CardContent className="p-4 gap-4 space-y-4">
                             <div className="flex justify-between">
                                 <div>Items</div>
-                                <div>{ formatCurrency(itemsPrice)}</div>
+                                <div>{formatCurrency(itemsPrice)}</div>
                             </div>
                             <div className="flex justify-between">
                                 <div>Tax</div>
-                                <div>{ formatCurrency(taxPrice)}</div>
+                                <div>{formatCurrency(taxPrice)}</div>
                             </div>
                             <div className="flex justify-between">
                                 <div>Shipping</div>
-                                <div>{ formatCurrency(shippingPrice)}</div>
+                                <div>{formatCurrency(shippingPrice)}</div>
                             </div>
                             <div className="flex justify-between">
                                 <div>Total</div>
-                                <div>{ formatCurrency(totalPrice)}</div>
+                                <div>{formatCurrency(totalPrice)}</div>
                             </div>
+
+                            {
+                                isAdmin && !isPaid && paymentMethod === 'CashOnDelivery' &&
+                                <MarkAsPaidButton/>
+                            }
+                            {
+                                isAdmin && isPaid && !isDelivered &&
+                                <MarkAsDeliveredButton/>
+                            }
                         </CardContent>
                     </Card>
                 </div>
